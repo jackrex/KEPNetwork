@@ -1,0 +1,22 @@
+{
+  "name": "KEPNetwork",
+  "version": "0.1.0",
+  "summary": "A short description of KEPNetwork.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/jackrex1993@gmail.com/KEPNetwork",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "jackrex1993@gmail.com": "xiepapeng@gotokeep.com"
+  },
+  "source": {
+    "git": "https://github.com/jackrex1993@gmail.com/KEPNetwork.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "KEPNetwork/Classes/**/*"
+}

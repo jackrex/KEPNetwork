@@ -1,0 +1,6 @@
+framework module KEPNetwork {
+  umbrella header "KEPNetwork-umbrella.h"
+
+  export *
+  module * { export * }
+}
