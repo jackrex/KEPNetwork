@@ -20,6 +20,10 @@ it, simply add the following line to your Podfile:
 pod 'KEPNetwork'
 ```
 
+## Architecture
+![KEPRequest](./KEPRequest.png)
+
+
 ## Author
 
 jackrex1993@gmail.com, xiepapeng@gotokeep.com
