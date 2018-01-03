@@ -10,6 +10,10 @@
 #endif
 #endif
 
+#import "KEPBatchRequestManager.h"
+#import "KEPChainRequestManager.h"
+#import "KEPRequest.h"
+#import "KEPRequestManager.h"
 
 FOUNDATION_EXPORT double KEPNetworkVersionNumber;
 FOUNDATION_EXPORT const unsigned char KEPNetworkVersionString[];
