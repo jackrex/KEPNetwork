@@ -37,6 +37,8 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 
 @property (nonatomic, strong) NSURLSessionTask *requestTask;
 
+@property (nonatomic, strong) NSURLRequest *currentRequest;
+
 @property (nonatomic, strong) NSHTTPURLResponse *response;
 
 ///  The response status code.

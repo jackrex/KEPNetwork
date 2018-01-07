@@ -14,6 +14,10 @@ FOUNDATION_EXPORT double KEPNetworkVersionNumber;
 //! Project version string for KEPNetwork.
 FOUNDATION_EXPORT const unsigned char KEPNetworkVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <KEPNetwork/PublicHeader.h>
+// In this header, you should import all the public headers of your framework using statements""like #import <KEPNetwork/PublicHeader.h>
 
+#import "KEPRequest.h"
+#import "KEPRequestManager.h"
+#import "KEPChainRequestManager.h"
+#import "KEPBatchRequestManager.h"
 
