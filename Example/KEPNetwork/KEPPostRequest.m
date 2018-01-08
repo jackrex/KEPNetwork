@@ -38,17 +38,21 @@
 }
 
 - (id)jsonValidator {
+//    return @{
+//             @"errorCode": [NSString class],
+//             @"now": [NSString class],
+//             @"data": @{
+//                     @"gender": [NSString class],
+//                     @"level": [NSNumber class],
+//                     @"token": [NSString class],
+//                     }
+//             };
+ //error
     return @{
              @"errorCode": [NSNumber class],
              @"now": [NSString class],
-             @"data": [NSDictionary class]
+             @"data": [NSNumber class]
              };
-// //error
-//    return @{
-//             @"errorCode": [NSNumber class],
-//             @"now": [NSString class],
-//             @"data": [NSNumber class]
-//             };
 }
 
 

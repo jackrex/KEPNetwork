@@ -25,6 +25,7 @@
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		D8B9017F20023DD600E086D6 /* KEPPostRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D8B9017E20023DD600E086D6 /* KEPPostRequest.m */; };
+		D8B90182200322D100E086D6 /* KEPLoginData.m in Sources */ = {isa = PBXBuildFile; fileRef = D8B90181200322D100E086D6 /* KEPLoginData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,8 @@
 		BFAABD0D27619C2B5F19C1E7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		D8B9017D20023DD600E086D6 /* KEPPostRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KEPPostRequest.h; sourceTree = "<group>"; };
 		D8B9017E20023DD600E086D6 /* KEPPostRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KEPPostRequest.m; sourceTree = "<group>"; };
+		D8B90180200322D100E086D6 /* KEPLoginData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KEPLoginData.h; sourceTree = "<group>"; };
+		D8B90181200322D100E086D6 /* KEPLoginData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KEPLoginData.m; sourceTree = "<group>"; };
 		FF225CD63B176C0F4DB4A119 /* Pods-KEPNetwork_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KEPNetwork_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-KEPNetwork_Example/Pods-KEPNetwork_Example.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -135,6 +138,8 @@
 		6003F593195388D20070C39A /* Example for KEPNetwork */ = {
 			isa = PBXGroup;
 			children = (
+				D8B90180200322D100E086D6 /* KEPLoginData.h */,
+				D8B90181200322D100E086D6 /* KEPLoginData.m */,
 				D8B9017D20023DD600E086D6 /* KEPPostRequest.h */,
 				D8B9017E20023DD600E086D6 /* KEPPostRequest.m */,
 				6003F59C195388D20070C39A /* KEPAppDelegate.h */,
@@ -421,6 +426,7 @@
 			files = (
 				6003F59E195388D20070C39A /* KEPAppDelegate.m in Sources */,
 				6003F5A7195388D20070C39A /* KEPViewController.m in Sources */,
+				D8B90182200322D100E086D6 /* KEPLoginData.m in Sources */,
 				D8B9017F20023DD600E086D6 /* KEPPostRequest.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);

@@ -20,13 +20,14 @@ typedef NS_ENUM(NSInteger, KEPRequestMethod){
 };
 
 typedef NS_ENUM(NSInteger, KEPRequestSerializerType) {
-    KEPRequestSerializerTypePlainText = 0,
-    KEPRequestSerializerTypeJSON,
+    KEPRequestSerializerTypeJSON = 0,
+    KEPRequestSerializerTypePlainText,
+
 };
 
 typedef NS_ENUM(NSInteger, KEPResponseSerializerType) {
-    KEPResponseSerializerTypePlainText,
     KEPResponseSerializerTypeJSON,
+    KEPResponseSerializerTypePlainText,
 };
 
 typedef NS_ENUM(NSInteger, KEPApiHostType) {
@@ -103,26 +104,10 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 - (void)startWithBlock:(nullable KEPRequestBlock)success
                                     failure:(nullable KEPRequestBlock)failure;
 
-///// default add API path you can use apiType to change, full path will NOT add API Domain
-//- (NSString *)requestUrl;
-//
-//- (NSURLRequest *)customUrlRequest;
-//
-//- (NSTimeInterval)requestTimeoutInterval;
-//
-//- (KEPRequestMethod)requestMethod;
-//
-//- (KEPRequestSerializerType)requestSerializerType;
-//
-//- (KEPApiHostType)apiType;
-//
-//- (KEPResponseSerializerType)responseSerializerType;
-//
-//- (nullable NSDictionary<NSString *, NSString *> *)requestHeaderFieldValueDictionary;
-//
-//- (BOOL)allowsCellularAccess;
-//
-//- (nullable id)jsonValidator;
+- (void)startWithClass:(nonnull Class)clazz success:(nullable KEPRequestBlock)success
+               failure:(nullable KEPRequestBlock)failure;
+
+
 
 @end
 

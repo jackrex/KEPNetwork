@@ -22,6 +22,10 @@ NSString *const KEPAnalyHost = @"https://apm.gotokeep.com";
     [self start];
 }
 
+- (void)startWithClass:(Class)clazz success:(KEPRequestBlock)success failure:(KEPRequestBlock)failure {
+    
+}
+
 - (void)start {
     [[KEPRequestManager sharedInstance] addRequest:self];
 }
@@ -34,15 +38,11 @@ NSString *const KEPAnalyHost = @"https://apm.gotokeep.com";
 #pragma mark - Method
 
 - (NSTimeInterval)requestTimeoutInterval {
-    return 60;
-}
-
-- (KEPRequestSerializerType)requestSerializerType {
-    return KEPRequestSerializerTypePlainText;
+    return _requestTimeoutInterval != 60 ? _requestTimeoutInterval : 60;
 }
 
 - (KEPResponseSerializerType)responseSerializerType {
-    return KEPResponseSerializerTypeJSON;
+    return _responseSerializerType == KEPResponseSerializerTypePlainText ? KEPResponseSerializerTypePlainText : KEPResponseSerializerTypeJSON ;
 }
 
 - (KEPRequestMethod)requestMethod {
@@ -88,7 +88,7 @@ NSString *const KEPAnalyHost = @"https://apm.gotokeep.com";
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@: %p>{ URL: %@ } \n { method: %@ } \n { arguments: %@ } \n { response: %@ }", NSStringFromClass([self class]), self, self.currentRequest.URL, self.currentRequest.HTTPMethod, self.requestArgument, self.responseObject];
+    return [NSString stringWithFormat:@"<%@: %p>{ URL: %@ } \n { method: %@ } \n { arguments: %@ } \n { response: %@ }", NSStringFromClass([self class]), self, self.currentRequest.URL, self.currentRequest.HTTPMethod, self.requestArgument, self.responseString];
 }
 
 @end

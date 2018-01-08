@@ -22,10 +22,10 @@
 	// Do any additional setup after loading the view, typically from a nib.
     KEPPostRequest *postRequest = [[KEPPostRequest alloc] initWithParams:@"1123581321"];
     [postRequest startWithBlock:^(__kindof KEPRequest * _Nonnull request) {
-        NSLog(@"%@", request);
+        NSLog(@"success %@", request);
 
     } failure:^(__kindof KEPRequest * _Nonnull request) {
-        NSLog(@"%@", request);
+        NSLog(@"failure %@", request);
 
     }];
     
@@ -68,5 +68,33 @@
     
     
 }
+
+- (IBAction)storepost:(id)sender {
+    KEPStoreRequest *request = [[KEPStoreRequest alloc] init];
+    request.requestUrl = @"/v2/buy";
+    [request startWithBlock:^(__kindof KEPRequest * _Nonnull request) {
+        
+    } failure:^(__kindof KEPRequest * _Nonnull request) {
+        
+    }];
+    
+}
+
+- (IBAction)fullurlpost:(id)sender {
+    KEPRequest *request = [[KEPRequest alloc] init];
+    request.requestUrl = @"https://www.baidu.com";
+    request.responseSerializerType = KEPResponseSerializerTypePlainText;
+    [request startWithBlock:^(__kindof KEPRequest * _Nonnull request) {
+         NSLog(@"success %@", request);
+    } failure:^(__kindof KEPRequest * _Nonnull request) {
+         NSLog(@"failure %@", request);
+    }];
+    
+    
+}
+
+
+
+
 
 @end

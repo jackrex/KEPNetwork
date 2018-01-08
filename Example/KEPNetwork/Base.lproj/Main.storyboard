@@ -45,6 +45,22 @@
                                     <action selector="simpleGet:" destination="whP-gf-Uak" eventType="touchUpInside" id="ddF-dg-swI"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rc5-Cj-fze">
+                                <rect key="frame" x="193" y="371" width="70" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="store post"/>
+                                <connections>
+                                    <action selector="storepost:" destination="whP-gf-Uak" eventType="touchUpInside" id="9df-Ux-qQa"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mAr-WB-2yf">
+                                <rect key="frame" x="85" y="438" width="69" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="fullurlpost"/>
+                                <connections>
+                                    <action selector="fullurlpost:" destination="whP-gf-Uak" eventType="touchUpInside" id="n53-36-Xtp"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>

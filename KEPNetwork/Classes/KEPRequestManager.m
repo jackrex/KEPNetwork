@@ -30,6 +30,8 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
 
 }
 
+#pragma mark - Init
+
 + (KEPRequestManager *)sharedInstance {
     static id sharedInstance = nil;
     static dispatch_once_t onceToken;
@@ -58,12 +60,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     return self;
 }
 
-- (void)cancelRequest:(KEPRequest *)request {
-    NSParameterAssert(request != nil);
-    [request.requestTask cancel];
-    [self removeRequestFromRecord:request];
-    
-}
+#pragma mark - Operation Request
 
 - (void)addRequest:(KEPRequest *)request {
     NSParameterAssert(request != nil);
@@ -91,67 +88,51 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     
 }
 
-- (NSURLSessionTask *)sessionTaskForRequest:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
-    KEPRequestMethod method = [request requestMethod];
-    NSString *url = [self constructRequestUrl:request];
-    id param = request.requestArgument;
-    AFHTTPRequestSerializer *requestSerializer = [self requestSerializerForRequest:request];
-    AFConstructingBlock constructingBlock = [request constructingBodyBlock];
-
-    switch (method) {
-        case KEPRequestMethodGET:
-           return [self dataTaskWithHTTPMethod:@"GET" requestSerializer:requestSerializer URLString:url parameters:param error:error];
-        case KEPRequestMethodPOST:
-            return [self dataTaskWithHTTPMethod:@"POST" requestSerializer:requestSerializer URLString:url parameters:param constructingBodyWithBlock:constructingBlock error:error];
-        case KEPRequestMethodHEAD:
-            return [self dataTaskWithHTTPMethod:@"HEAD" requestSerializer:requestSerializer URLString:url parameters:param error:error];
-        case KEPRequestMethodPUT:
-            return [self dataTaskWithHTTPMethod:@"PUT" requestSerializer:requestSerializer URLString:url parameters:param error:error];
-        case KEPRequestMethodDELETE:
-            return [self dataTaskWithHTTPMethod:@"DELETE" requestSerializer:requestSerializer URLString:url parameters:param error:error];
-    }
+- (void)cancelRequest:(KEPRequest *)request {
+    NSParameterAssert(request != nil);
+    [request.requestTask cancel];
+    [self removeRequestFromRecord:request];
+    
 }
 
-
-- (void)requestDidSucceedWithRequest:(KEPRequest *)request {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (request.successBlock) {
-            request.successBlock(request);
-        }
-    });
+- (void)addRequestToRecord:(KEPRequest *)request {
+    Lock();
+    self.requestsRecord[@(request.requestTask.taskIdentifier)] = request;
+    Unlock();
 }
 
-- (void)requestDidFailWithRequest:(KEPRequest *)request error:(NSError *)error {
-    request.error = error;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        //Add More Logic
-        if (request.failureBlock) {
-            request.failureBlock(request);
-        }
-    });
+- (void)removeRequestFromRecord:(KEPRequest *)request {
+    Lock();
+    [self.requestsRecord removeObjectForKey:@(request.requestTask.taskIdentifier)];
+    Unlock();
 }
 
-- (BOOL)validateResult:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
-    BOOL result = [request responseStatusCode] >= 200 && [request responseStatusCode] <= 299;
-    if (!result) {
-        if (error) {
-            *error = [NSError errorWithDomain:KEPRequestValidationErrorDomain code:KEPRequestValidationErrorInvalidStatusCode userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
-        }
-        return result;
-    }
-    id json = [request responseJSONObject];
-    id validator = [request jsonValidator];
-    if (json && validator) {
-        result = [self validateJSON:json withValidator:validator];
-        if (!result) {
-            if (error) {
-                *error = [NSError errorWithDomain:KEPRequestValidationErrorDomain code:KEPRequestValidationErrorInvalidJSONFormat userInfo:@{NSLocalizedDescriptionKey:@"Invalid JSON format"}];
-            }
-            return result;
+- (NSString *)constructRequestUrl:(KEPRequest *)request {
+    NSParameterAssert(request != nil);
+    NSString *detailUrl = [request requestUrl];
+    NSURL *requestURL = [NSURL URLWithString:detailUrl];
+    if (!requestURL.host) {
+        switch (request.apiType) {
+            case KEPApi:
+                requestURL = [NSURL URLWithString:[KEPApiHost stringByAppendingString:detailUrl]];
+                break;
+            case KEPAnaly:
+                requestURL = [NSURL URLWithString:[KEPAnalyHost stringByAppendingString:detailUrl]];
+                
+                break;
+                
+            case KEPStore:
+                requestURL = [NSURL URLWithString:[KEPStoreHost stringByAppendingString:detailUrl]];
+                break;
+                
+            default:
+                break;
         }
     }
-    return YES;
+    return requestURL.absoluteString;
 }
+
+#pragma mark - Handle Request
 
 - (void)handleRequestResult:(NSURLSessionTask *)task responseObject:(id)responseObject error:(NSError *)error {
     Lock();
@@ -205,51 +186,45 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     });
 }
 
-- (void)addRequestToRecord:(KEPRequest *)request {
-    Lock();
-    self.requestsRecord[@(request.requestTask.taskIdentifier)] = request;
-    Unlock();
+- (void)requestDidSucceedWithRequest:(KEPRequest *)request {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (request.successBlock) {
+            request.successBlock(request);
+        }
+    });
 }
 
-- (void)removeRequestFromRecord:(KEPRequest *)request {
-    Lock();
-    [self.requestsRecord removeObjectForKey:@(request.requestTask.taskIdentifier)];
-    Unlock();
+- (void)requestDidFailWithRequest:(KEPRequest *)request error:(NSError *)error {
+    request.error = error;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        //Add more logic such as delegate callback etc
+        if (request.failureBlock) {
+            request.failureBlock(request);
+        }
+    });
 }
 
-- (NSString *)constructRequestUrl:(KEPRequest *)request {
-    NSParameterAssert(request != nil);
-    NSString *detailUrl = [request requestUrl];
-    NSURL *requestURL = [NSURL URLWithString:detailUrl];
-    if (!requestURL.host) {
-        requestURL = [NSURL URLWithString:[KEPApiHost stringByAppendingString:detailUrl]];
+- (BOOL)validateResult:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
+    BOOL result = [request responseStatusCode] >= 200 && [request responseStatusCode] <= 299;
+    if (!result) {
+        if (error) {
+            *error = [NSError errorWithDomain:KEPRequestValidationErrorDomain code:KEPRequestValidationErrorInvalidStatusCode userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
+        }
+        return result;
     }
-    return requestURL.absoluteString;
-}
-
-- (AFHTTPRequestSerializer *)requestSerializerForRequest:(KEPRequest *)request {
-    AFHTTPRequestSerializer *requestSerializer = nil;
-    if (request.requestSerializerType == KEPRequestSerializerTypePlainText) {
-        requestSerializer = [AFHTTPRequestSerializer serializer];
-    } else if (request.requestSerializerType == KEPRequestSerializerTypeJSON) {
-        requestSerializer = [AFJSONRequestSerializer serializer];
-    }
-    
-    requestSerializer.timeoutInterval = [request requestTimeoutInterval];
-    requestSerializer.allowsCellularAccess = [request allowsCellularAccess];
-    
-    // If api needs to add custom value to HTTPHeaderField
-    NSDictionary<NSString *, NSString *> *headerFieldValueDictionary = [request requestHeaderFieldValueDictionary];
-    if (headerFieldValueDictionary != nil) {
-        for (NSString *httpHeaderField in headerFieldValueDictionary.allKeys) {
-            NSString *value = headerFieldValueDictionary[httpHeaderField];
-            [requestSerializer setValue:value forHTTPHeaderField:httpHeaderField];
+    id json = [request responseJSONObject];
+    id validator = [request jsonValidator];
+    if (json && validator) {
+        result = [self validateJSON:json withValidator:validator];
+        if (!result) {
+            if (error) {
+                *error = [NSError errorWithDomain:KEPRequestValidationErrorDomain code:KEPRequestValidationErrorInvalidJSONFormat userInfo:@{NSLocalizedDescriptionKey:@"Invalid JSON format"}];
+            }
+            return result;
         }
     }
-    return requestSerializer;
+    return YES;
 }
-
-
 
 - (BOOL)validateJSON:(id)json withValidator:(id)jsonValidator {
     if ([json isKindOfClass:[NSDictionary class]] &&
@@ -309,7 +284,28 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     return stringEncoding;
 }
 
-#pragma mark -
+#pragma mark - Http Request
+
+- (NSURLSessionTask *)sessionTaskForRequest:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
+    KEPRequestMethod method = [request requestMethod];
+    NSString *url = [self constructRequestUrl:request];
+    id param = request.requestArgument;
+    AFHTTPRequestSerializer *requestSerializer = [self requestSerializerForRequest:request];
+    AFConstructingBlock constructingBlock = [request constructingBodyBlock];
+    
+    switch (method) {
+        case KEPRequestMethodGET:
+            return [self dataTaskWithHTTPMethod:@"GET" requestSerializer:requestSerializer URLString:url parameters:param error:error];
+        case KEPRequestMethodPOST:
+            return [self dataTaskWithHTTPMethod:@"POST" requestSerializer:requestSerializer URLString:url parameters:param constructingBodyWithBlock:constructingBlock error:error];
+        case KEPRequestMethodHEAD:
+            return [self dataTaskWithHTTPMethod:@"HEAD" requestSerializer:requestSerializer URLString:url parameters:param error:error];
+        case KEPRequestMethodPUT:
+            return [self dataTaskWithHTTPMethod:@"PUT" requestSerializer:requestSerializer URLString:url parameters:param error:error];
+        case KEPRequestMethodDELETE:
+            return [self dataTaskWithHTTPMethod:@"DELETE" requestSerializer:requestSerializer URLString:url parameters:param error:error];
+    }
+}
 
 - (NSURLSessionDataTask *)dataTaskWithHTTPMethod:(NSString *)method
                                requestSerializer:(AFHTTPRequestSerializer *)requestSerializer
@@ -341,6 +337,68 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     
     return dataTask;
 }
+
+- (AFHTTPRequestSerializer *)requestSerializerForRequest:(KEPRequest *)request {
+    AFHTTPRequestSerializer *requestSerializer = nil;
+    if (request.requestSerializerType == KEPRequestSerializerTypePlainText) {
+        requestSerializer = [AFHTTPRequestSerializer serializer];
+    } else if (request.requestSerializerType == KEPRequestSerializerTypeJSON) {
+        requestSerializer = [AFJSONRequestSerializer serializer];
+    }
+    
+    requestSerializer.timeoutInterval = [request requestTimeoutInterval];
+    requestSerializer.allowsCellularAccess = [request allowsCellularAccess];
+    
+    //fill uniform header
+    
+    [self fillHeader:requestSerializer];
+    // add custom value to HTTPHeaderField
+    NSDictionary<NSString *, NSString *> *headerFieldValueDictionary = [request requestHeaderFieldValueDictionary];
+    if (headerFieldValueDictionary != nil) {
+        for (NSString *httpHeaderField in headerFieldValueDictionary.allKeys) {
+            NSString *value = headerFieldValueDictionary[httpHeaderField];
+            [requestSerializer setValue:value forHTTPHeaderField:httpHeaderField];
+        }
+    }
+    return requestSerializer;
+}
+
+- (void)fillHeader:(id)obj {
+    NSTimeZone *zone = [NSTimeZone defaultTimeZone];
+    if (zone.name) {
+        [obj setValue:zone.name forHTTPHeaderField:@"x-keep-timezone"];
+    }
+//    [obj setValue:[KUtils deviceId] forHTTPHeaderField:@"x-device-id"];
+//    [obj setValue:[@([KUtils currentSecondTimestamp]) stringValue] forHTTPHeaderField:@"x-timestamp"];
+//    [obj setValue:[self generateNewDeviceTag] forHTTPHeaderField:@"x-is-new-device"];
+//    [obj setValue:[@([KUtils currentSecondTimestamp]) stringValue] forHTTPHeaderField:@"x-timestamp"];
+//    [obj setValue:[self headerVersionNum] forHTTPHeaderField:@"x-version-name"];
+//    [obj setValue:[self headerBuildNum] forHTTPHeaderField:@"x-version-code"];
+//    [obj setValue:@"Apple Store" forHTTPHeaderField:@"x-channel"];
+//    [obj setValue:@"Apple" forHTTPHeaderField:@"x-manufacturer"];
+//    [obj setValue:[KUtils deviceName] forHTTPHeaderField:@"x-model"];
+//    [obj setValue:[KUtils deviceModel] forHTTPHeaderField:@"x-model-raw"];
+//    [obj setValue:[KUtils currentLanguage] forHTTPHeaderField:@"x-locale"];
+//    [obj setValue:@"iOS" forHTTPHeaderField:@"x-os"];
+//    [obj setValue:[[UIDevice currentDevice] systemVersion] forHTTPHeaderField:@"x-os-version"];
+//    [obj setValue:[NSString stringWithFormat:@"%.0f", [[UIScreen mainScreen] bounds].size.width] forHTTPHeaderField:@"x-screen-width"];
+//    [obj setValue:[NSString stringWithFormat:@"%.0f", [[UIScreen mainScreen] bounds].size.height] forHTTPHeaderField:@"x-screen-height"];
+//    [obj setValue:[KUtils appBundleIdentifier] forHTTPHeaderField:@"x-bundleId"];
+//    if (self.headerExpandArray && self.headerExpandArray.count) {
+//        [self.headerExpandArray enumerateObjectsUsingBlock:^(HTTPHeaderExpandBlock  _Nonnull expandBlock, NSUInteger idx, BOOL * _Nonnull stop) {
+//            NSDictionary * expandParams = expandBlock();
+//            if (expandParams && expandParams.count) {
+//                [expandParams enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull object, BOOL * _Nonnull stop) {
+//#if DEBUG
+//                    NSAssert(![obj valueForHTTPHeaderField:key], @"你使用了默认通用Header的Key作为你的Key");
+//#endif
+//                    [obj setValue:object forHTTPHeaderField:key];
+//                }];
+//            }
+//        }];
+//    }
+}
+
 
 @end
 
