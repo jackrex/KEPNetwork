@@ -12,6 +12,7 @@
 
 #import "KEPBatchRequestManager.h"
 #import "KEPChainRequestManager.h"
+#import "KEPNetwork.h"
 #import "KEPRequest.h"
 #import "KEPRequestManager.h"
 

@@ -13,6 +13,7 @@
 
 NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation";
 
+
 #define Lock() pthread_mutex_lock(&_lock)
 #define Unlock() pthread_mutex_unlock(&_lock)
 
@@ -41,9 +42,17 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
 - (instancetype)init {
     self = [super init];
     if (self) {
+        pthread_mutex_init(&_lock, NULL);
+
+        self.requestsRecord = [NSMutableDictionary dictionary];
+        
+        self.responseSerializer = [AFJSONResponseSerializer serializer];
+        self.responseSerializer.acceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
+        
+        self.manager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        ((AFJSONResponseSerializer *)self.manager.responseSerializer).removesKeysWithNullValues = YES;
         self.manager.responseSerializer = [AFHTTPResponseSerializer serializer];
         self.manager.responseSerializer.acceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
-        pthread_mutex_init(&_lock, NULL);
 
     }
     return self;
@@ -63,7 +72,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     NSURLRequest *customUrlRequest= [request customUrlRequest];
     if (customUrlRequest) {
         __block NSURLSessionDataTask *dataTask = nil;
-        dataTask = [_manager dataTaskWithRequest:customUrlRequest completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+        dataTask = [self.manager dataTaskWithRequest:customUrlRequest completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
             [self handleRequestResult:dataTask responseObject:responseObject error:error];
         }];
         request.requestTask = dataTask;
@@ -123,7 +132,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
 }
 
 - (BOOL)validateResult:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
-    BOOL result = [request responseStatusCode] == 200 || [request responseStatusCode] == 204;
+    BOOL result = [request responseStatusCode] >= 200 && [request responseStatusCode] <= 299;
     if (!result) {
         if (error) {
             *error = [NSError errorWithDomain:KEPRequestValidationErrorDomain code:KEPRequestValidationErrorInvalidStatusCode userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
@@ -165,7 +174,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
         request.responseString = [[NSString alloc] initWithData:responseObject encoding:[self stringEncodingWithRequest:request]];
         
         switch (request.responseSerializerType) {
-            case KEPResponseSerializerTypeHTTP:
+            case KEPResponseSerializerTypePlainText:
                 // Default serializer. Do nothing.
                 break;
             case KEPResponseSerializerTypeJSON:
@@ -211,14 +220,16 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
 - (NSString *)constructRequestUrl:(KEPRequest *)request {
     NSParameterAssert(request != nil);
     NSString *detailUrl = [request requestUrl];
-
-    return [NSURL URLWithString:detailUrl relativeToURL:detailUrl].absoluteString;
-
+    NSURL *requestURL = [NSURL URLWithString:detailUrl];
+    if (!requestURL.host) {
+        requestURL = [NSURL URLWithString:[KEPApiHost stringByAppendingString:detailUrl]];
+    }
+    return requestURL.absoluteString;
 }
 
 - (AFHTTPRequestSerializer *)requestSerializerForRequest:(KEPRequest *)request {
     AFHTTPRequestSerializer *requestSerializer = nil;
-    if (request.requestSerializerType == KEPRequestSerializerTypeHTTP) {
+    if (request.requestSerializerType == KEPRequestSerializerTypePlainText) {
         requestSerializer = [AFHTTPRequestSerializer serializer];
     } else if (request.requestSerializerType == KEPRequestSerializerTypeJSON) {
         requestSerializer = [AFJSONRequestSerializer serializer];
@@ -316,14 +327,14 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
                                            error:(NSError * _Nullable __autoreleasing *)error {
     NSMutableURLRequest *request = nil;
     
-    if (block) {
+    if (block && block != NULL) {
         request = [requestSerializer multipartFormRequestWithMethod:method URLString:URLString parameters:parameters constructingBodyWithBlock:block error:error];
     } else {
         request = [requestSerializer requestWithMethod:method URLString:URLString parameters:parameters error:error];
     }
     
     __block NSURLSessionDataTask *dataTask = nil;
-    dataTask = [_manager dataTaskWithRequest:request
+    dataTask = [self.manager dataTaskWithRequest:request
                            completionHandler:^(NSURLResponse * __unused response, id responseObject, NSError *_error) {
                                [self handleRequestResult:dataTask responseObject:responseObject error:_error];
                            }];

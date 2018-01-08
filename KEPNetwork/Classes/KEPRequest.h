@@ -20,15 +20,24 @@ typedef NS_ENUM(NSInteger, KEPRequestMethod){
 };
 
 typedef NS_ENUM(NSInteger, KEPRequestSerializerType) {
-    KEPRequestSerializerTypeHTTP = 0,
+    KEPRequestSerializerTypePlainText = 0,
     KEPRequestSerializerTypeJSON,
 };
 
 typedef NS_ENUM(NSInteger, KEPResponseSerializerType) {
-    KEPResponseSerializerTypeHTTP,
+    KEPResponseSerializerTypePlainText,
     KEPResponseSerializerTypeJSON,
-    KEPResponseSerializerTypeXMLParser,
 };
+
+typedef NS_ENUM(NSInteger, KEPApiHostType) {
+    KEPApi,
+    KEPStore,
+    KEPAnaly
+};
+
+extern NSString *const KEPApiHost;
+extern NSString *const KEPStoreHost;
+extern NSString *const KEPAnalyHost;
 
 typedef void(^KEPRequestBlock)(__kindof KEPRequest *request);
 typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
@@ -41,13 +50,10 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 
 @property (nonatomic, strong) NSHTTPURLResponse *response;
 
-///  The response status code.
-@property (nonatomic, readonly) NSInteger responseStatusCode;
+@property (nonatomic) NSInteger responseStatusCode;
 
-///  The response header fields.
 @property (nonatomic, strong, nullable) NSDictionary *responseHeaders;
 
-///  The raw data representation of response. Note this value can be nil if request failed.
 @property (nonatomic, strong, nullable) NSData *responseData;
 
 @property (nonatomic, strong, nullable) NSString *responseString;
@@ -55,6 +61,28 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 @property (nonatomic, strong, nullable) NSError *error;
 
 @property (nonatomic, assign) NSInteger tag;
+
+@property (nonatomic, assign) KEPRequestMethod requestMethod;
+
+@property (nonatomic, strong) NSString *requestUrl;
+
+@property (nonatomic, strong) NSURLRequest *customUrlRequest;
+
+@property (nonatomic, assign) NSTimeInterval requestTimeoutInterval;
+
+@property (nonatomic, assign) KEPApiHostType apiType;
+
+@property (nonatomic, assign) BOOL allowsCellularAccess;
+
+@property (nonatomic, strong) id jsonValidator;
+
+@property (nonatomic, strong) id requestArgument;
+
+@property (nonatomic, strong) NSDictionary<NSString *, NSString *> *requestHeaderFieldValueDictionary;
+
+@property (nonatomic, assign) KEPRequestSerializerType requestSerializerType;
+
+@property (nonatomic, assign) KEPResponseSerializerType responseSerializerType;
 
 @property (nonatomic, copy, nullable) KEPRequestBlock successBlock;
 
@@ -66,28 +94,47 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 
 @property (nonatomic, strong, nullable) id responseJSONObject;
 
+@property (nonatomic, readonly, getter=isCancelled) BOOL cancelled;
+
+@property (nonatomic, readonly, getter=isExecuting) BOOL executing;
+
 - (nullable id)requestArgument;
 
 - (void)startWithBlock:(nullable KEPRequestBlock)success
                                     failure:(nullable KEPRequestBlock)failure;
-- (NSString *)requestUrl;
 
-- (NSURLRequest *)customUrlRequest;
-
-- (NSTimeInterval)requestTimeoutInterval;
-
-- (KEPRequestMethod)requestMethod;
-
-- (KEPRequestSerializerType)requestSerializerType;
-
-- (KEPResponseSerializerType)responseSerializerType;
-
-- (nullable NSDictionary<NSString *, NSString *> *)requestHeaderFieldValueDictionary;
-
-- (BOOL)allowsCellularAccess;
-
-- (nullable id)jsonValidator;
+///// default add API path you can use apiType to change, full path will NOT add API Domain
+//- (NSString *)requestUrl;
+//
+//- (NSURLRequest *)customUrlRequest;
+//
+//- (NSTimeInterval)requestTimeoutInterval;
+//
+//- (KEPRequestMethod)requestMethod;
+//
+//- (KEPRequestSerializerType)requestSerializerType;
+//
+//- (KEPApiHostType)apiType;
+//
+//- (KEPResponseSerializerType)responseSerializerType;
+//
+//- (nullable NSDictionary<NSString *, NSString *> *)requestHeaderFieldValueDictionary;
+//
+//- (BOOL)allowsCellularAccess;
+//
+//- (nullable id)jsonValidator;
 
 @end
+
+/// Use This Request for Keep Store
+@interface KEPStoreRequest : KEPRequest
+
+@end
+
+/// Use This Request for Keep Analy
+@interface KEPAnalyRequest : KEPRequest
+
+@end
+
 
 NS_ASSUME_NONNULL_END
