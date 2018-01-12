@@ -25,7 +25,6 @@ NS_ENUM(NSInteger) {
 
 - (void)addRequest:(KEPRequest *)request;
 - (void)cancelRequest:(KEPRequest *)request;
-- (NSString *)constructRequestUrl:(KEPRequest *)request;
 
 
 @end

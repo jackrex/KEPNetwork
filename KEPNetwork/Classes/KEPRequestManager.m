@@ -7,6 +7,7 @@
 
 #import "KEPRequestManager.h"
 #import "KEPRequest.h"
+#import "KEPRequest+Private.h"
 #import <pthread/pthread.h>
 #import <AFNetworking/AFNetworking.h>
 
@@ -107,30 +108,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
     Unlock();
 }
 
-- (NSString *)constructRequestUrl:(KEPRequest *)request {
-    NSParameterAssert(request != nil);
-    NSString *detailUrl = [request requestUrl];
-    NSURL *requestURL = [NSURL URLWithString:detailUrl];
-    if (!requestURL.host) {
-        switch (request.apiType) {
-            case KEPApi:
-                requestURL = [NSURL URLWithString:[KEPApiHost stringByAppendingString:detailUrl]];
-                break;
-            case KEPAnaly:
-                requestURL = [NSURL URLWithString:[KEPAnalyHost stringByAppendingString:detailUrl]];
-                
-                break;
-                
-            case KEPStore:
-                requestURL = [NSURL URLWithString:[KEPStoreHost stringByAppendingString:detailUrl]];
-                break;
-                
-            default:
-                break;
-        }
-    }
-    return requestURL.absoluteString;
-}
+
 
 #pragma mark - Handle Request
 
@@ -288,7 +266,7 @@ NSString *const KEPRequestValidationErrorDomain = @"com.gotokeep.keep.validation
 
 - (NSURLSessionTask *)sessionTaskForRequest:(KEPRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
     KEPRequestMethod method = [request requestMethod];
-    NSString *url = [self constructRequestUrl:request];
+    NSString *url = [request constructRequestUrl];
     id param = request.requestArgument;
     AFHTTPRequestSerializer *requestSerializer = [self requestSerializerForRequest:request];
     AFConstructingBlock constructingBlock = [request constructingBodyBlock];

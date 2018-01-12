@@ -73,11 +73,12 @@
     KEPStoreRequest *request = [[KEPStoreRequest alloc] init];
     request.requestUrl = @"/v2/buy";
     [request startWithBlock:^(__kindof KEPRequest * _Nonnull request) {
-        
+        NSLog(@"success %@", request);
+
     } failure:^(__kindof KEPRequest * _Nonnull request) {
-        
+        NSLog(@"failure %@", request);
+
     }];
-    
 }
 
 - (IBAction)fullurlpost:(id)sender {

@@ -45,27 +45,27 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 
 @interface KEPRequest : NSObject
 
-@property (nonatomic, strong) NSURLSessionTask *requestTask;
+@property (nonatomic, strong, readonly) NSURLRequest *currentRequest;
 
-@property (nonatomic, strong) NSURLRequest *currentRequest;
+@property (nonatomic, strong, readonly) NSHTTPURLResponse *response;
 
-@property (nonatomic, strong) NSHTTPURLResponse *response;
+@property (nonatomic, readonly) NSInteger responseStatusCode;
 
-@property (nonatomic) NSInteger responseStatusCode;
+@property (nonatomic, strong, nullable, readonly) NSDictionary *responseHeaders;
 
-@property (nonatomic, strong, nullable) NSDictionary *responseHeaders;
+@property (nonatomic, strong, nullable, readonly) NSData *responseData;
 
-@property (nonatomic, strong, nullable) NSData *responseData;
+@property (nonatomic, copy, nullable, readonly) NSString *responseString;
 
-@property (nonatomic, strong, nullable) NSString *responseString;
+@property (nonatomic, strong, nullable, readonly) NSError *error;
 
-@property (nonatomic, strong, nullable) NSError *error;
+@property (nonatomic, strong, readonly) NSURLSessionTask *requestTask;
 
 @property (nonatomic, assign) NSInteger tag;
 
 @property (nonatomic, assign) KEPRequestMethod requestMethod;
 
-@property (nonatomic, strong) NSString *requestUrl;
+@property (nonatomic, copy) NSString *requestUrl;
 
 @property (nonatomic, strong) NSURLRequest *customUrlRequest;
 
@@ -79,7 +79,7 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 
 @property (nonatomic, strong) id requestArgument;
 
-@property (nonatomic, strong) NSDictionary<NSString *, NSString *> *requestHeaderFieldValueDictionary;
+@property (nonatomic, copy) NSDictionary<NSString *, NSString *> *requestHeaderFieldValueDictionary;
 
 @property (nonatomic, assign) KEPRequestSerializerType requestSerializerType;
 
@@ -100,6 +100,8 @@ typedef void (^AFConstructingBlock)(id<AFMultipartFormData> formData);
 @property (nonatomic, readonly, getter=isExecuting) BOOL executing;
 
 - (nullable id)requestArgument;
+
+- (NSString *)constructRequestUrl;
 
 - (void)startWithBlock:(nullable KEPRequestBlock)success
                                     failure:(nullable KEPRequestBlock)failure;

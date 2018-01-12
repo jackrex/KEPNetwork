@@ -7,6 +7,7 @@
 
 #import "KEPRequest.h"
 #import "KEPRequestManager.h"
+#import "KEPRequest+Private.h"
 #import <AFNetworking/AFNetworking.h>
 
 @implementation KEPRequest
@@ -85,6 +86,30 @@ NSString *const KEPAnalyHost = @"https://apm.gotokeep.com";
 
 - (NSDictionary<NSString *,NSString *> *)requestHeaderFieldValueDictionary {
     return @{};
+}
+
+- (NSString *)constructRequestUrl {
+    NSString *detailUrl = [self requestUrl];
+    NSURL *requestURL = [NSURL URLWithString:detailUrl];
+    if (!requestURL.host) {
+        switch (self.apiType) {
+            case KEPApi:
+                requestURL = [NSURL URLWithString:[KEPApiHost stringByAppendingString:detailUrl]];
+                break;
+            case KEPAnaly:
+                requestURL = [NSURL URLWithString:[KEPAnalyHost stringByAppendingString:detailUrl]];
+                
+                break;
+                
+            case KEPStore:
+                requestURL = [NSURL URLWithString:[KEPStoreHost stringByAppendingString:detailUrl]];
+                break;
+                
+            default:
+                break;
+        }
+    }
+    return requestURL.absoluteString;
 }
 
 - (NSString *)description {
